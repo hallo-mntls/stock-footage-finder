@@ -4,6 +4,8 @@ import Script from "next/script";
 import Link from "next/link";
 import "./globals.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/seo";
+import { CollectionProvider } from "@/context/CollectionContext";
+import CollectionDrawer from "@/components/CollectionDrawer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -55,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </head>
       <body className="bg-[#0a0a0f] text-white min-h-screen flex flex-col">
+      <CollectionProvider>
         {/* Header */}
         <header className="border-b border-white/5 bg-[#0a0a0f]/95 backdrop-blur sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -91,6 +94,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </p>
           </div>
         </footer>
+        <CollectionDrawer />
+      </CollectionProvider>
       </body>
     </html>
   );

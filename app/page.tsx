@@ -1,6 +1,5 @@
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
-import AdBanner from "@/components/AdBanner";
 import { CATEGORIES } from "@/lib/seo";
 
 const POPULAR_SEARCHES = [
@@ -37,9 +36,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* Top ad slot */}
-      <AdBanner slot="1234567890" format="horizontal" className="h-24 mb-10 w-full" />
 
       {/* Stats strip */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
@@ -99,8 +95,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Bottom ad slot */}
-      <AdBanner slot="0987654321" format="rectangle" className="h-60 mb-10 w-full max-w-md mx-auto" />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import type { VideoAsset } from "@/types";
+import { useCollection } from "@/context/CollectionContext";
 
 const SOURCE_COLORS: Record<string, string> = {
   pexels:  "bg-green-500/20 text-green-400",
@@ -18,6 +19,8 @@ function fmt(sec: number | null) {
 export default function VideoCard({ asset }: { asset: VideoAsset }) {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { add, remove, has } = useCollection();
+  const saved = has(asset.id);
 
   const isPortrait = asset.height != null && asset.width != null && asset.height > asset.width;
 
@@ -44,12 +47,30 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
 
   function handleDownload(e: React.MouseEvent) {
     e.preventDefault();
+    e.stopPropagation();
     if (!asset.downloadable || !asset.videoUrl) return;
     const filename = `${asset.source}_${asset.id}.mp4`;
     const a = document.createElement("a");
     a.href = `/api/proxy-download?url=${encodeURIComponent(asset.videoUrl)}&filename=${encodeURIComponent(filename)}`;
     a.download = filename;
     a.click();
+  }
+
+  function toggleSave(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (saved) {
+      remove(asset.id);
+    } else {
+      add({
+        id: asset.id,
+        source: asset.source,
+        title: asset.title,
+        thumbnail: asset.thumbnail,
+        videoUrl: asset.videoUrl,
+        downloadable: asset.downloadable,
+        pageUrl: asset.pageUrl,
+      });
+    }
   }
 
   return (
@@ -79,6 +100,22 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
           />
         )}
 
+        {/* Save / bookmark button */}
+        <button
+          onClick={toggleSave}
+          className={`absolute top-2 right-2 z-10 p-1.5 rounded-full backdrop-blur-sm transition-all ${
+            saved
+              ? "bg-violet-500 text-white shadow-lg shadow-violet-900/50"
+              : "bg-black/50 text-white/60 opacity-0 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-black/70 hover:text-white"
+          }`}
+          aria-label={saved ? "Remove from collection" : "Save to collection"}
+        >
+          <svg className="w-4 h-4" fill={saved ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
+        </button>
+
         {/* Duration */}
         {fmt(asset.duration) && (
           <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-1.5 py-0.5 rounded">
@@ -87,11 +124,14 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
         )}
 
         {/* Actions — always visible on mobile, hover-only on desktop */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-1.5">
+        <div
+          className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-1.5"
+          onClick={(e) => e.stopPropagation()}
+        >
           {asset.downloadable && (
             <button
               onClick={handleDownload}
-              className="flex-1 bg-white/15 hover:bg-white/30 text-white text-xs font-semibold rounded px-2 py-1.5 backdrop-blur-sm transition-colors"
+              className="flex-1 bg-white/15 hover:bg-white/30 active:bg-white/40 text-white text-xs font-semibold rounded px-2 py-1.5 backdrop-blur-sm transition-colors"
             >
               ↓ Download
             </button>
@@ -100,7 +140,8 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
             href={asset.pageUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 bg-white/15 hover:bg-white/30 text-white text-xs font-semibold rounded px-2 py-1.5 backdrop-blur-sm transition-colors text-center"
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 bg-white/15 hover:bg-white/30 active:bg-white/40 text-white text-xs font-semibold rounded px-2 py-1.5 backdrop-blur-sm transition-colors text-center"
           >
             ↗ Open
           </a>
