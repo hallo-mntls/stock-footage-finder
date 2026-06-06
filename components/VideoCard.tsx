@@ -19,6 +19,8 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const isPortrait = asset.height != null && asset.width != null && asset.height > asset.width;
+
   function onMouseEnter() {
     if (!asset.previewUrl) return;
     setPlaying(true);
@@ -27,6 +29,17 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
   function onMouseLeave() {
     setPlaying(false);
     if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+  }
+
+  function handleTap() {
+    if (!asset.previewUrl) return;
+    if (playing) {
+      setPlaying(false);
+      if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+    } else {
+      setPlaying(true);
+      setTimeout(() => videoRef.current?.play().catch(() => {}), 50);
+    }
   }
 
   function handleDownload(e: React.MouseEvent) {
@@ -43,9 +56,10 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
     <article className="group bg-[#1a1a27] border border-white/5 rounded-xl overflow-hidden hover:border-white/15 hover:-translate-y-0.5 transition-all duration-150">
       {/* Thumbnail */}
       <div
-        className="relative aspect-video bg-[#111] overflow-hidden cursor-pointer"
+        className={`relative ${isPortrait ? "aspect-[9/16]" : "aspect-video"} bg-[#111] overflow-hidden cursor-pointer`}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
+        onClick={handleTap}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -72,8 +86,8 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
           </span>
         )}
 
-        {/* Hover actions */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5">
+        {/* Actions — always visible on mobile, hover-only on desktop */}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-1.5">
           {asset.downloadable && (
             <button
               onClick={handleDownload}
