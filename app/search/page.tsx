@@ -55,6 +55,11 @@ async function Results({ query, orientation, source }: { query: string; orientat
     );
   }
 
+  const isPortrait = (a: (typeof filtered)[number]) =>
+    a.height != null && a.width != null && a.height > a.width;
+  const portraitCount = filtered.filter(isPortrait).length;
+  const mixed = portraitCount > 0 && portraitCount < filtered.length;
+
   const isPortraitFilter = orientation === "portrait";
   const gridCols = isPortraitFilter
     ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5"
@@ -73,11 +78,22 @@ async function Results({ query, orientation, source }: { query: string; orientat
           .join(", ")}
       </p>
 
-      <div className={`grid ${gridCols} gap-4`}>
-        {filtered.map((asset) => (
-          <VideoCard key={asset.id} asset={asset} />
-        ))}
-      </div>
+      {mixed ? (
+        // Masonry layout — packs mixed portrait/landscape heights without gaps
+        <div className="columns-2 md:columns-3 xl:columns-4 gap-4">
+          {filtered.map((asset) => (
+            <div key={asset.id} className="mb-4 break-inside-avoid">
+              <VideoCard asset={asset} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className={`grid ${gridCols} gap-4`}>
+          {filtered.map((asset) => (
+            <VideoCard key={asset.id} asset={asset} />
+          ))}
+        </div>
+      )}
     </>
   );
 }

@@ -39,6 +39,11 @@ export default async function CategoryPage({
 
   const { results, counts } = await searchAll(cat.keywords);
 
+  const portraitCount = results.filter(
+    (a) => a.height != null && a.width != null && a.height > a.width
+  ).length;
+  const mixed = portraitCount > 0 && portraitCount < results.length;
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <JsonLd
@@ -63,11 +68,21 @@ export default async function CategoryPage({
       </div>
 
       {/* Results */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-        {results.map((asset) => (
-          <VideoCard key={asset.id} asset={asset} />
-        ))}
-      </div>
+      {mixed ? (
+        <div className="columns-2 md:columns-3 xl:columns-4 gap-4 mb-8">
+          {results.map((asset) => (
+            <div key={asset.id} className="mb-4 break-inside-avoid">
+              <VideoCard asset={asset} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+          {results.map((asset) => (
+            <VideoCard key={asset.id} asset={asset} />
+          ))}
+        </div>
+      )}
 
       {/* SEO copy */}
       <section className="bg-white/3 border border-white/8 rounded-2xl p-8 mb-8">
