@@ -1,12 +1,21 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL, CATEGORIES } from "@/lib/seo";
+import { POSTS } from "@/lib/blog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified: now, changeFrequency: "daily", priority: 1 },
+    { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
   ];
+
+  const blogPages: MetadataRoute.Sitemap = POSTS.map((post) => ({
+    url: `${SITE_URL}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
 
   const categoryPages: MetadataRoute.Sitemap = CATEGORIES.map((cat) => ({
     url: `${SITE_URL}/category/${cat.slug}`,
@@ -33,5 +42,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...categoryPages, ...searchPages];
+  return [...staticPages, ...categoryPages, ...blogPages, ...searchPages];
 }

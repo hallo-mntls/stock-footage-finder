@@ -56,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/category/city" className="hover:text-white transition-colors">City</Link>
               <Link href="/category/aerial" className="hover:text-white transition-colors">Aerial</Link>
               <Link href="/category/abstract" className="hover:text-white transition-colors">Abstract</Link>
+              <Link href="/blog" className="hover:text-white transition-colors">Guides</Link>
             </nav>
           </div>
         </header>
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/search?q=city+timelapse" className="hover:text-gray-300">City Timelapse</Link>
               <Link href="/search?q=aerial+drone" className="hover:text-gray-300">Aerial Drone</Link>
               <Link href="/search?q=abstract+background" className="hover:text-gray-300">Abstract Backgrounds</Link>
+              <Link href="/blog" className="hover:text-gray-300">Guides</Link>
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mb-4">
               <Link href="/impressum" className="hover:text-gray-300">Impressum</Link>

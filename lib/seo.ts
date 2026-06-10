@@ -1,5 +1,5 @@
 export const SITE_NAME = "Stock Footage Finder";
-export const SITE_URL = "https://stock-footage-finder.com";
+export const SITE_URL = "https://www.stock-footage-finder.com";
 export const SITE_DESCRIPTION =
   "Find free stock footage from Pexels, Pixabay, YouTube, Coverr and more — search all sources at once. Download royalty-free video clips for YouTube, Instagram, films and commercial projects.";
 
