@@ -74,6 +74,35 @@ function normalizeCoverr(v: any): VideoAsset {
   };
 }
 
+function parseArchiveRuntime(runtime: unknown): number | null {
+  if (!runtime) return null;
+  const str = String(runtime).trim();
+  const parts = str.split(":").map((p) => parseFloat(p));
+  if (parts.some((p) => isNaN(p))) return null;
+  if (parts.length === 3) return Math.round(parts[0] * 3600 + parts[1] * 60 + parts[2]);
+  if (parts.length === 2) return Math.round(parts[0] * 60 + parts[1]);
+  return Math.round(parts[0]);
+}
+
+async function fetchArchiveVideoFile(identifier: string): Promise<{ videoUrl: string | null; width: number | null; height: number | null }> {
+  try {
+    const res = await fetch(`https://archive.org/metadata/${identifier}`, { next: { revalidate: 300 } });
+    if (!res.ok) return { videoUrl: null, width: null, height: null };
+    const data = await res.json();
+    const files: any[] = data.files || [];
+    const mp4 = files.find((f) => f.format === "h.264" || f.format === "MPEG4")
+      || files.find((f) => f.name?.toLowerCase().endsWith(".mp4"));
+    if (!mp4) return { videoUrl: null, width: null, height: null };
+    return {
+      videoUrl: `https://archive.org/download/${identifier}/${encodeURIComponent(mp4.name)}`,
+      width: mp4.width ? parseInt(mp4.width, 10) : null,
+      height: mp4.height ? parseInt(mp4.height, 10) : null,
+    };
+  } catch {
+    return { videoUrl: null, width: null, height: null };
+  }
+}
+
 async function searchPexels(query: string, orientation: string): Promise<VideoAsset[]> {
   if (!process.env.PEXELS_API_KEY) return [];
   const params: Record<string, string> = { query, per_page: "20" };
@@ -129,18 +158,57 @@ async function searchCoverr(query: string): Promise<VideoAsset[]> {
   return (data.hits || []).map(normalizeCoverr);
 }
 
+async function searchArchive(query: string, orientation: string): Promise<VideoAsset[]> {
+  const params = new URLSearchParams();
+  params.set("q", `${query} AND mediatype:movies`);
+  params.set("output", "json");
+  params.set("rows", "12");
+  params.set("page", "1");
+  ["identifier", "title", "creator", "runtime"].forEach((f) => params.append("fl[]", f));
+
+  const res = await fetch(`https://archive.org/advancedsearch.php?${params}`, { next: { revalidate: 300 } });
+  if (!res.ok) return [];
+  const data = await res.json();
+  const docs: any[] = data.response?.docs || [];
+
+  const items = await Promise.all(docs.map(async (doc): Promise<VideoAsset | null> => {
+    const { videoUrl, width, height } = await fetchArchiveVideoFile(doc.identifier);
+    if (!videoUrl) return null;
+    return {
+      id: `archive_${doc.identifier}`,
+      source: "archive",
+      title: doc.title || doc.identifier,
+      thumbnail: `https://archive.org/services/img/${doc.identifier}`,
+      videoUrl,
+      previewUrl: videoUrl,
+      pageUrl: `https://archive.org/details/${doc.identifier}`,
+      duration: parseArchiveRuntime(doc.runtime),
+      width,
+      height,
+      user: doc.creator || "",
+      downloadable: true,
+    };
+  }));
+
+  let results = items.filter((v): v is VideoAsset => v !== null);
+  if (orientation === "landscape") results = results.filter((v) => (v.width ?? 0) > (v.height ?? 0));
+  if (orientation === "portrait") results = results.filter((v) => (v.height ?? 0) > (v.width ?? 0));
+  return results;
+}
+
 export async function searchAll(query: string, orientation = "all") {
-  const [pexels, pixabay, youtube, coverr] = await Promise.allSettled([
+  const [pexels, pixabay, youtube, coverr, archive] = await Promise.allSettled([
     searchPexels(query, orientation),
     searchPixabay(query, orientation),
     searchYouTube(query),
     searchCoverr(query),
+    searchArchive(query, orientation),
   ]);
 
   const get = (r: PromiseSettledResult<VideoAsset[]>) =>
     r.status === "fulfilled" ? r.value : [];
 
-  const sources = [get(pexels), get(pixabay), get(youtube), get(coverr)];
+  const sources = [get(pexels), get(pixabay), get(youtube), get(coverr), get(archive)];
   const combined: VideoAsset[] = [];
   const maxLen = Math.max(...sources.map((s) => s.length));
   for (let i = 0; i < maxLen; i++) {
@@ -154,6 +222,7 @@ export async function searchAll(query: string, orientation = "all") {
       pixabay: get(pixabay).length,
       youtube: get(youtube).length,
       coverr: get(coverr).length,
+      archive: get(archive).length,
       total: combined.length,
     },
   };

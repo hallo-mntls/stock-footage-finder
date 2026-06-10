@@ -5,7 +5,7 @@ import { buildSearchMeta } from "@/lib/seo";
 import SearchBar from "@/components/SearchBar";
 import VideoCard from "@/components/VideoCard";
 
-const SOURCES = ["all", "pexels", "pixabay", "youtube", "coverr"] as const;
+const SOURCES = ["all", "pexels", "pixabay", "youtube", "coverr", "archive"] as const;
 
 const SOURCE_LABELS: Record<string, string> = {
   all: "All Sources",
@@ -13,6 +13,7 @@ const SOURCE_LABELS: Record<string, string> = {
   pixabay: "Pixabay",
   youtube: "YouTube",
   coverr: "Coverr",
+  archive: "Archive.org",
 };
 
 interface Props {
@@ -57,7 +58,7 @@ async function Results({ query, orientation, source }: { query: string; orientat
         <strong className="text-white">{filtered.length} free stock video clips</strong> for &ldquo;{query}&rdquo;
         {source !== "all" && <span> from {SOURCE_LABELS[source]}</span>}
         {" — "}
-        {(["pexels", "pixabay", "youtube", "coverr"] as const)
+        {(["pexels", "pixabay", "youtube", "coverr", "archive"] as const)
           .filter((s) => counts[s])
           .map((s) => `${counts[s]} ${s}`)
           .join(", ")}
