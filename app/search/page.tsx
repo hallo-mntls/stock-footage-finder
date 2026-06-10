@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { searchAll } from "@/lib/search";
-import { buildSearchMeta } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, breadcrumbSchema } from "@/lib/seo";
 import SearchBar from "@/components/SearchBar";
 import VideoCard from "@/components/VideoCard";
+import JsonLd from "@/components/JsonLd";
 
 const SOURCES = ["all", "pexels", "pixabay", "youtube", "coverr", "archive"] as const;
 
@@ -22,13 +23,21 @@ interface Props {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { q = "" } = await searchParams;
-  if (!q) return { title: "Search Free Stock Footage" };
-  const meta = buildSearchMeta(q, 0);
+  if (!q) {
+    return {
+      title: "Search Free Stock Footage",
+      description:
+        "Search free, royalty-free stock footage from Pexels, Pixabay, YouTube, Coverr and Archive.org all at once.",
+    };
+  }
+  const query = q.trim();
+  const title = `${query} — Free Stock Footage & Royalty-Free Video Clips | ${SITE_NAME}`;
+  const description = `Download free "${query}" stock footage from Pexels, Pixabay, YouTube, Coverr and Archive.org. Royalty-free HD & 4K video clips, no watermark, no signup.`;
   return {
-    title: meta.title,
-    description: meta.description,
-    alternates: { canonical: meta.canonical },
-    openGraph: { title: meta.title, description: meta.description },
+    title,
+    description,
+    alternates: { canonical: `${SITE_URL}/search?q=${encodeURIComponent(query)}` },
+    openGraph: { title, description },
   };
 }
 
@@ -83,6 +92,14 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {q && (
+        <JsonLd
+          data={breadcrumbSchema([
+            { name: "Home", url: SITE_URL },
+            { name: `"${q}" Stock Footage`, url: `${SITE_URL}/search?q=${encodeURIComponent(q)}` },
+          ])}
+        />
+      )}
       {/* Search bar */}
       <div className="mb-8">
         <SearchBar defaultValue={q} />

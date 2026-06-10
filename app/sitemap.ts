@@ -19,6 +19,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "ocean waves", "city timelapse", "forest nature", "aerial drone footage",
     "abstract background", "slow motion water", "sunset beach", "rain window",
     "fire flames", "snow winter", "mountains hiking", "traffic cars",
+    "clouds time lapse", "night sky stars", "waterfall", "autumn leaves",
+    "coffee pour", "people walking street", "drone beach", "northern lights",
+    "particles background", "smoke", "underwater", "city night",
+    "green screen", "loop background", "fog forest", "river flowing",
+    "space galaxy", "fireworks", "rainforest", "desert sand dunes",
   ];
 
   const searchPages: MetadataRoute.Sitemap = popularSearches.map((q) => ({

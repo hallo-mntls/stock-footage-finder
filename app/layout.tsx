@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <html lang="de" className={inter.className}>
+    <html lang="en" className={inter.className}>
       <body className="bg-[#0a0a0f] text-white min-h-screen flex flex-col">
       <ConsentProvider>
       <CollectionProvider>
@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <p className="text-center text-gray-600">
               © {new Date().getFullYear()} Stock Footage Finder · Free royalty-free video search engine ·{" "}
-              Videos sourced from Pexels, Pixabay, YouTube, and Coverr.
+              Videos sourced from Pexels, Pixabay, YouTube, Coverr, and Archive.org.
             </p>
           </div>
         </footer>

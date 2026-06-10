@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { searchAll } from "@/lib/search";
-import { CATEGORIES, buildCategoryMeta } from "@/lib/seo";
+import { CATEGORIES, buildCategoryMeta, SITE_NAME, SITE_URL, breadcrumbSchema } from "@/lib/seo";
 import VideoCard from "@/components/VideoCard";
 import SearchBar from "@/components/SearchBar";
-import AdBanner from "@/components/AdBanner";
-import AffiliateSection from "@/components/AffiliateSection";
+import JsonLd from "@/components/JsonLd";
 
 // Pre-generate all category pages at build time (SSG) — great for SEO
 export function generateStaticParams() {
@@ -42,6 +41,12 @@ export default async function CategoryPage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: SITE_URL },
+          { name: `${cat.label} Stock Footage`, url: `${SITE_URL}/category/${cat.slug}` },
+        ])}
+      />
       <div className="mb-8">
         <SearchBar />
       </div>
@@ -57,23 +62,26 @@ export default async function CategoryPage({
         </p>
       </div>
 
-      {/* Top ad */}
-      <AdBanner slot="6677889900" format="horizontal" className="h-20 mb-8 w-full" />
-
       {/* Results */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-        {results.slice(0, 12).map((asset) => (
+        {results.map((asset) => (
           <VideoCard key={asset.id} asset={asset} />
         ))}
       </div>
 
-      <AdBanner slot="7788990011" format="horizontal" className="h-20 mb-8 w-full" />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-        {results.slice(12).map((asset) => (
-          <VideoCard key={asset.id} asset={asset} />
-        ))}
-      </div>
+      {/* SEO copy */}
+      <section className="bg-white/3 border border-white/8 rounded-2xl p-8 mb-8">
+        <h2 className="text-lg font-bold mb-3">
+          Download Free {cat.label} Footage for Any Project
+        </h2>
+        <p className="text-gray-400 text-sm leading-7">
+          Browse hand-picked free {cat.label.toLowerCase()} stock footage gathered from Pexels,
+          Pixabay, Coverr, YouTube and Archive.org — all in one place. Every clip is royalty-free
+          and ready to download in HD or 4K, with no watermark and no signup. Use {SITE_NAME} to
+          find the perfect {cat.label.toLowerCase()} B-roll for your YouTube videos, social media
+          reels, films and commercial projects in seconds.
+        </p>
+      </section>
 
       {/* Other categories */}
       <div className="mt-12 pt-8 border-t border-white/10">
@@ -92,8 +100,6 @@ export default async function CategoryPage({
           ))}
         </div>
       </div>
-
-      <AffiliateSection query={cat.label} />
     </div>
   );
 }

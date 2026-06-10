@@ -85,7 +85,7 @@ export default function VideoCard({ asset }: { asset: VideoAsset }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={asset.thumbnail}
-          alt={asset.title}
+          alt={`${asset.title} — free ${asset.source} stock footage`}
           loading="lazy"
           className={`w-full h-full object-cover transition-opacity duration-200 ${playing ? "opacity-0" : "opacity-100"}`}
         />
